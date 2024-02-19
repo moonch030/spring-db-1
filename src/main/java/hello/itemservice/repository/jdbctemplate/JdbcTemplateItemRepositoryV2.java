@@ -45,7 +45,7 @@ public class JdbcTemplateItemRepositoryV2 implements ItemRepository {
     }
 
     @Override
-    public Item save(Item item) {
+    public Item save(Item item) { //제일 좋은 방식
         String sql = "insert into item(item_name, price, quantity) " +
                 "values (:itemName, :price, :quantity)";
 
@@ -69,7 +69,7 @@ public class JdbcTemplateItemRepositoryV2 implements ItemRepository {
                 .addValue("itemName", updateParam.getItemName())
                 .addValue("price", updateParam.getPrice())
                 .addValue("quantity", updateParam.getQuantity())
-                .addValue("id", itemId);
+                .addValue("id", itemId); // 이 부분이 별도로 필요
 
         template.update(sql, param);
     }
