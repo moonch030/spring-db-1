@@ -18,13 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * JdbcTemplate 구현
- */
 @Slf4j
 public class JdbcTemplateItemRepositoryV1 implements ItemRepository {
-
-    private  final JdbcTemplate template;
+    private final JdbcTemplate template;
 
     public JdbcTemplateItemRepositoryV1(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
@@ -32,25 +28,28 @@ public class JdbcTemplateItemRepositoryV1 implements ItemRepository {
 
     @Override
     public Item save(Item item) {
-        String sql = "insert into item(item_name, price, quantity) values(?,?,?)";
+        String sql = "insert into item(item_name, price, quantity) values (?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        template.update(connection ->{
+        template.update(conection -> {
             // 자동 증가 키
-            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
-            ps.setString(1,item.getItemName());
-            ps.setInt(2,item.getPrice());
-            ps.setInt(3,item.getQuantity());
+            PreparedStatement ps = conection.prepareStatement(sql, new String[]{"id"});
+
+            ps.setString(1, item.getItemName());
+            ps.setInt(2, item.getPrice());
+            ps.setInt(3, item.getQuantity());
+
             return ps;
         }, keyHolder);
 
         long key = keyHolder.getKey().longValue();
         item.setId(key);
+
         return item;
     }
 
     @Override
     public void update(Long itemId, ItemUpdateDto updateParam) {
-        String sql = "update item set item_name=?, price=?, quantity=? where id=?";
+        String sql = "update item set item_name = ?, price = ?, quantity = ? where id = ?";
         template.update(sql,
                 updateParam.getItemName(),
                 updateParam.getPrice(),
@@ -60,14 +59,24 @@ public class JdbcTemplateItemRepositoryV1 implements ItemRepository {
 
     @Override
     public Optional<Item> findById(Long id) {
-        String sql = "select id, item_name, price, quantity from item where id=?";
+        String sql = "select id, item_name, price, quantity from item where id = ?";
         try {
             Item item = template.queryForObject(sql, itemRowMapper(), id);
             return Optional.of(item);
-        } catch (EmptyResultDataAccessException e){
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
 
+    private RowMapper<Item> itemRowMapper() {
+        return ((rs, rowNum) -> {
+            Item item = new Item();
+            item.setId(rs.getLong("id"));
+            item.setItemName(rs.getString("item_name"));
+            item.setPrice(rs.getInt("price"));
+            item.setQuantity(rs.getInt("quantity"));
+            return item;
+        });
     }
 
     @Override
@@ -100,17 +109,5 @@ public class JdbcTemplateItemRepositoryV1 implements ItemRepository {
 
         log.info("sql={}", sql);
         return template.query(sql, itemRowMapper(), param.toArray());
-    }
-
-    
-    //데이터베이스 조회 결과를 객체로 변환할 때 사용
-    private RowMapper<Item> itemRowMapper() {
-        return ((rs, rowNum) -> {
-            Item item = new Item();
-            item.setId(rs.getLong("id"));
-            item.setItemName(rs.getString("item_name"));
-            item.setQuantity(rs.getInt("quantity"));
-            return item;
-        });
     }
 }
