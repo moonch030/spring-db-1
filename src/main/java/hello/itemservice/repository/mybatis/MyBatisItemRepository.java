@@ -19,7 +19,7 @@ public class MyBatisItemRepository implements ItemRepository {
     @Override
     public Item save(Item item) {
         itemMapper.save(item);
-        return null;
+        return item;
     }
 
     @Override

@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
-//mybatis 적용 2 설정과 실행 다시 듣기
 
 @Configuration
 @RequiredArgsConstructor
